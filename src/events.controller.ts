@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, ValidationPipe } from "@nestjs/common";
 import { CreateEventDto } from "./create-event.dto";
 import { UpdateEventDto } from "./update-event.dto";
 import { Event } from "./event.entity";
@@ -13,32 +13,14 @@ export class EventsController{
         private readonly repository: Repository<Event>
     ){}
 
-    private events: Event[] = [];
-
     @Get()
     async findAll(){
         return await this.repository.find();
     }
 
-    @Get('/practice')
-    async practice() {
-        return await this.repository.find({
-            select: ['id', 'when'],
-            where: [{
-                id: MoreThan(3),
-                when: MoreThan(new Date('2021-02-12T13:00:00'))
-            },{
-                description: Like('%meet%')
-            }],
-            take: 2,
-            order: {
-                id: "DESC"
-            }
-        });
-    }
-
     @Get(':id')
-    async findOne(@Param('id') id){
+    async findOne(@Param('id', ParseIntPipe) id: number){
+        console.log(typeof id);
         return await this.repository.findOneBy({id: id});
     }
 
