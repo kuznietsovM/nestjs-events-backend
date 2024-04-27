@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, ClassSerializerInterceptor, Controller, Delete, ForbiddenException, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, SerializeOptions, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from "@nestjs/common";
 import { CreateEventDto } from "./input/create-event.dto";
 import { UpdateEventDto } from "./input/update-event.dto";
 import { Event } from "./event.entity";
@@ -12,6 +12,7 @@ import { User } from "src/auth/user.entity";
 import { AuthGuardJwt } from "src/auth/auth-guard.jwt";
 
 @Controller('/events')
+@SerializeOptions({strategy: 'excludeAll'})
 export class EventsController{
     private readonly logger = new Logger(EventsController.name);
 
@@ -21,6 +22,7 @@ export class EventsController{
 
     @Get()
     @UsePipes(new ValidationPipe({transform: true}))
+    @UseInterceptors(ClassSerializerInterceptor)
     async findAll(@Query() filter: ListEvents){
         this.logger.log(`GET: FIND ALL ROUTE`);
 
@@ -83,6 +85,7 @@ export class EventsController{
 
 
     @Get(':id')
+    @UseInterceptors(ClassSerializerInterceptor)
     async findOne(@Param('id', ParseIntPipe) id: number){
         this.logger.log(`GET: FIND ONE ROUTE`);
          
@@ -96,6 +99,7 @@ export class EventsController{
 
     @Post()
     @UseGuards(AuthGuardJwt)
+    @UseInterceptors(ClassSerializerInterceptor)
     async create(@Body() input: CreateEventDto, @CurrentUser() user: User){
         this.logger.log(`POST: CREATE ROUTE`);
         return await this.eventsService.createEvent(input, user);
@@ -103,6 +107,7 @@ export class EventsController{
 
     @Patch(':id')
     @UseGuards(AuthGuardJwt)
+    @UseInterceptors(ClassSerializerInterceptor)
     async update(
         @Param('id') id, 
         @Body() input: UpdateEventDto,
